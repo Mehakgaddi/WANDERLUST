@@ -11,15 +11,12 @@ const listingSchema = new Schema({
     type: String,
   },
   image: {
-    type: String,
+    type: Object,
     // jb image ka url to hai but image nhi hai..........
     default:
       "https://unsplash.com/photos/3d-render-of-luxury-hotel-lobby-and-reception-FNAURWZ6Mqc",
     // jb image undefined hai yah fir hai hi nhi........
-    set: (v) =>
-      v === ""
-        ? "https://unsplash.com/photos/3d-render-of-luxury-hotel-lobby-and-reception-FNAURWZ6Mqc"
-        : v,
+    
   },
   price: {
     type: Number,
