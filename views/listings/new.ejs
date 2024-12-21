@@ -1,29 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WanderLust</title>
-  </head>
-  <body>
-    <h2>Create New Listing</h2>
-    <form action="/listings" method="POST">
-      <input name="listing[title]" type="text" placeholder="Enter your title" />
-      <br /><br />
+<%layout("/layouts/boilerplate.ejs")%>
+<body>
+  <h2>Create New Listing</h2>
+  <form action="/listings" method="POST">
+    <div>
+      <label for="title" class="form-label"></label>
+      <input
+        name="listing[title]"
+        type="text"
+        placeholder="Enter your title"
+        class="form-control"
+      />
+    </div>
+
+    <div>
+      <label for="description" class="form-label"></label>
       <textarea
         name="listing[description]"
         placeholder="Enter your description"
+        class="form-control"
       ></textarea>
-      <br /><br />
-      <input name="listing[image]" type="text" placeholder="Enter image URL/Link" />
-      <br /><br />
-      <input name="listing[price]" type="number" placeholder="Enter the price" />
-      <br /><br />
-      <input name="listing[country]" type="text" placeholder="Enter the country" />
-      <br /><br />
-      <input name="listing[location]" type="text" placeholder="Enter the location" />
-      <br /><br />
-      <button type="submit">Create</button>
-    </form>
-  </body>
-</html>
+    </div>
+
+    <div>
+      <label for="image" class="form-label"></label>
+      <input
+        name="listing[image]"
+        type="text"
+        placeholder="Enter image URL/Link"
+        class="form-control"
+      />
+    </div>
+
+    <div>
+      <label for="price" class="form-label"></label>
+      <input
+        name="listing[price]"
+        type="number"
+        placeholder="Enter the price"
+        class="form-control"
+      />
+    </div>
+
+    <div>
+      <label for="country" class="form-label"></label>
+      <input
+        name="listing[country]"
+        type="text"
+        placeholder="Enter the country"
+        class="form-control"
+      />
+    </div>
+
+    <div>
+      <label for="location" class="form-label"></label>
+      <input
+        name="listing[location]"
+        type="text"
+        placeholder="Enter the location"
+        class="form-control"
+      />
+    </div>
+
+    <button class="btn btn-dark" type="submit">Create</button>
+  </form>
+</body>
