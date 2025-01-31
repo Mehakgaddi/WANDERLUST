@@ -7,6 +7,7 @@ const path = require("path");
 const port = 8080;
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
+const ExpressError = require("./utils/expressError.js");
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 
@@ -95,8 +96,13 @@ app.delete("/listings/:id", async (req, res) => {
 //   res.send("sample test listing");
 // });
 
+app.all("*", (req, res, next) => {
+  next(new ExpressError(404, "Page not found"));
+})
+
 app.use((err, req, res, next) => {
-  res.send("something went wrong");
+  let {statusCode, message} = err;
+  res.status(statusCode).send(message);
 });
 
 app.listen(port, () => {
