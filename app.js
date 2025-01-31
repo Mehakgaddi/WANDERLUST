@@ -111,7 +111,8 @@ app.all("*", (req, res, next) => {  // will execute when none of the above paths
 app.use((err, req, res, next) => {    // error handling middleware
   console.log(err.name);
   let {statusCode = 500, message="Something went wrong"} = err;
-  res.status(statusCode).send(message);
+  res.status(statusCode).render("error.ejs", {message});
+  // res.status(statusCode).send(message);
 });
 
 app.listen(port, () => {
