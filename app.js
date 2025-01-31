@@ -6,6 +6,7 @@ const methodOverride = require("method-override");
 const path = require("path");
 const port = 8080;
 const ejsMate = require("ejs-mate");
+const wrapAsync = require("./utils/wrapAsync.js");
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 
@@ -43,14 +44,14 @@ app.get("/listings/new", (req, res) => {
   res.render("listings/new.ejs");
 });
 
-app.post("/listings", (req, res) => {
+app.post("/listings", wrapAsync(async(req, res) => {
   // let {title, description, image, price, location, country} = req.body;
   // here listing in req.body is an object which contains key-value pair
   let newListing = new Listing(req.body.listing); // make a new object give these values to the models listing
-  newListing.save();
+  await newListing.save();
   console.log(newListing);
   res.redirect("/listings");
-});
+}));
 
 // show route
 app.get("/listings/:id", async (req, res) => {
@@ -93,6 +94,10 @@ app.delete("/listings/:id", async (req, res) => {
 //   console.log("sample has been saved");
 //   res.send("sample test listing");
 // });
+
+app.use((err, req, res, next) => {
+  res.send("something went wrong");
+});
 
 app.listen(port, () => {
   console.log(`app is listening to the port ${port}`);
