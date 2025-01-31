@@ -35,10 +35,10 @@ app.get("/", (req, res) => {
   res.send("this is root path");
 });
 
-app.get("/listings", async (req, res) => {
+app.get("/listings", wrapAsync(async (req, res) => {
   const allListings = await Listing.find({});
   res.render("listings/index.ejs", { allListings });
-});
+}));
 
 // crete new listing
 app.get("/listings/new", (req, res) => {
@@ -48,6 +48,9 @@ app.get("/listings/new", (req, res) => {
 app.post("/listings", wrapAsync(async(req, res) => {
   // let {title, description, image, price, location, country} = req.body;
   // here listing in req.body is an object which contains key-value pair
+  if(!req.body.listing) {
+    throw new ExpressError(400, "Send valid data for listing");
+  }
   let newListing = new Listing(req.body.listing); // make a new object give these values to the models listing
   await newListing.save();
   console.log(newListing);
@@ -55,32 +58,36 @@ app.post("/listings", wrapAsync(async(req, res) => {
 }));
 
 // show route
-app.get("/listings/:id", async (req, res) => {
+app.get("/listings/:id", wrapAsync(async (req, res) => {
   let { id } = req.params;
   const listing = await Listing.findById(id);
   res.render("listings/show.ejs", { listing });
-});
+}));
 
-// update route
-app.get("/listings/:id/edit", async (req, res) => {
+// edit route
+app.get("/listings/:id/edit", wrapAsync(async (req, res) => {
   let { id } = req.params;
   const listing = await Listing.findById(id);
   res.render("listings/edit.ejs", { listing });
-});
+}));
 
-app.put("/listings/:id", async (req, res) => {
+//update route
+app.put("/listings/:id", wrapAsync(async (req, res) => {
+  if(!req.body.listing) {
+    throw new ExpressError(400, "Send valid data for listing");
+  };
   let { id } = req.params;
-  await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true });
+  await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true }); //...contains all the properties of listing
   res.redirect(`/listings/${id}`);
-});
+}));
 
 // delete route
 
-app.delete("/listings/:id", async (req, res) => {
+app.delete("/listings/:id", wrapAsync(async (req, res) => {
   let { id } = req.params;
   await Listing.findByIdAndDelete(id);
   res.redirect("/listings");
-});
+})) ;
 
 // app.get("/testlisting", async (req, res) => {
 //   let sampleListing = new Listing({
@@ -96,12 +103,14 @@ app.delete("/listings/:id", async (req, res) => {
 //   res.send("sample test listing");
 // });
 
-app.all("*", (req, res, next) => {
+
+app.all("*", (req, res, next) => {  // will execute when none of the above paths matched with it
   next(new ExpressError(404, "Page not found"));
 })
 
-app.use((err, req, res, next) => {
-  let {statusCode, message} = err;
+app.use((err, req, res, next) => {    // error handling middleware
+  console.log(err.name);
+  let {statusCode = 500, message="Something went wrong"} = err;
   res.status(statusCode).send(message);
 });
 
