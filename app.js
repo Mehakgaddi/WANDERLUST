@@ -48,10 +48,26 @@ app.get("/listings/new", (req, res) => {
 app.post("/listings", wrapAsync(async(req, res) => {
   // let {title, description, image, price, location, country} = req.body;
   // here listing in req.body is an object which contains key-value pair
-  if(!req.body.listing) {
+  if(!req.body.listing) {   // problem is this will check for all the fields collectively but if we miss one of them it will not handle it instead it will save that  
     throw new ExpressError(400, "Send valid data for listing");
   }
   let newListing = new Listing(req.body.listing); // make a new object give these values to the models listing
+  // check for each fields
+  if(!req.body.listing.title) {
+    throw new ExpressError(400, "Title is missing");
+  };
+  if(!req.body.listing.description) {
+    throw new ExpressError(400, "Description is missing");
+  };
+  if(!req.body.listing.price) {
+    throw new ExpressError(400, "Price is missing");
+  };
+  if(!req.body.listing.location) {
+    throw new ExpressError(400, "Location is missing");
+  };
+  if(!req.body.listing.country) {
+    throw new ExpressError(400, "Country is missing");
+  };
   await newListing.save();
   console.log(newListing);
   res.redirect("/listings");
