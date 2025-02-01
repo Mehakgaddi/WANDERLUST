@@ -8,6 +8,7 @@ const port = 8080;
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/expressError.js");
+const {listingSchema} = require("./schema.js");  // import only listingSchema from the entire schema object
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 
@@ -48,26 +49,16 @@ app.get("/listings/new", (req, res) => {
 app.post("/listings", wrapAsync(async(req, res) => {
   // let {title, description, image, price, location, country} = req.body;
   // here listing in req.body is an object which contains key-value pair
-  if(!req.body.listing) {   // problem is this will check for all the fields collectively but if we miss one of them it will not handle it instead it will save that  
-    throw new ExpressError(400, "Send valid data for listing");
-  }
+  // if(!req.body.listing) {   // problem is this will check for all the fields collectively but if we miss one of them it will not handle it instead it will save that  
+  //   throw new ExpressError(400, "Send valid data for listing");
+  // }
   let newListing = new Listing(req.body.listing); // make a new object give these values to the models listing
-  // check for each fields
-  if(!req.body.listing.title) {
-    throw new ExpressError(400, "Title is missing");
-  };
-  if(!req.body.listing.description) {
-    throw new ExpressError(400, "Description is missing");
-  };
-  if(!req.body.listing.price) {
-    throw new ExpressError(400, "Price is missing");
-  };
-  if(!req.body.listing.location) {
-    throw new ExpressError(400, "Location is missing");
-  };
-  if(!req.body.listing.country) {
-    throw new ExpressError(400, "Country is missing");
-  };
+  // check for each fields by using tool joi(npm package) used for validation our schema
+  let result = listingSchema.validate(req.body);
+  if(result.error) {
+    throw new ExpressError(400, result.error);  
+    console.log(result);
+  }
   await newListing.save();
   console.log(newListing);
   res.redirect("/listings");
