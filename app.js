@@ -8,7 +8,9 @@ const port = 8080;
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/expressError.js");
-const {listingSchema} = require("./schema.js");  // import only listingSchema from the entire schema object
+const {listingSchema, reviewSchema} = require("./schema.js");  // import only listingSchema from the entire schema object
+const Review = require("./models/review.js");
+
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 
@@ -41,6 +43,17 @@ const validateListing = (req, res, next) => {
   let {error} = listingSchema.validate(req.body);
   if(error) {
     let errMsg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(400, errMsg);
+  }
+  else {
+    next();
+  }
+}
+
+const validateReview = (req, res, next) => {
+  let {error} = reviewSchema.validate(req.body);
+  if(error) {
+    let errMsg = error.details.map((el) => el.message).join(", ");
     throw new ExpressError(400, errMsg);
   }
   else {
@@ -104,6 +117,21 @@ app.delete("/listings/:id", wrapAsync(async (req, res) => {
   await Listing.findByIdAndDelete(id);
   res.redirect("/listings");
 })) ;
+
+// reveiw route
+
+// adding a review
+
+app.post("/listings/:id/reviews", validateReview, wrapAsync(async (req, res) => {
+  let listing = await Listing.findById(req.params.id);
+  let review = new Review(req.body.review);
+
+  listing.review.push(review);
+  await review.save();
+  await listing.save();
+  console.log(review.comment);
+  res.redirect(`/listings/${listing._id}`);
+}));
 
 // app.get("/testlisting", async (req, res) => {
 //   let sampleListing = new Listing({
