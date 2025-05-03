@@ -20,5 +20,5 @@
       false
     );
   });
-  console.log("bootstrap validation is done");  
+  console.log("bootstrap validation is done");
 })();
