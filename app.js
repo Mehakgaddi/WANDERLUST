@@ -1,15 +1,16 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const Listing = require("./models/listing.js");
 const methodOverride = require("method-override");
 const path = require("path");
 const port = 8080;
 const ejsMate = require("ejs-mate");
-const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/expressError.js");
-const { listingSchema, reviewSchema } = require("./schema.js"); // import only listingSchema from the entire schema object
-const Review = require("./models/review.js");
+const session = require("express-session");
+const flash = require("connect-flash");
+
+const listings = require("./routes/listing.js");
+const reviews = require("./routes/review.js");
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
 
@@ -32,142 +33,36 @@ app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
+const sessionOptions = {
+  secret : "thisismysecretkey",
+  resave :false,
+  saveUninitialized : true,
+  cookie : {
+    expires : Date.now() + 7 * 24 * 60 * 60 * 1000,
+    maxAge : 7 * 24 * 60 * 60 * 1000,
+    httpOnly : true,
+  }
+};
+
 // index route
 app.get("/", (req, res) => {
   res.send("this is root path");
 });
 
-// middleware for schema validations
-const validateListing = (req, res, next) => {
-  let { error } = listingSchema.validate(req.body);
-  if (error) {
-    let errMsg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(400, errMsg);
-  } else {
-    next();
-  }
-};
+app.use(session(sessionOptions)); // this will create a session for each user
+app.use(flash()); // this will create a flash message for each user
 
-const validateReview = (req, res, next) => {
-  let { error } = reviewSchema.validate(req.body);
-  if (error) {
-    let errMsg = error.details.map((el) => el.message).join(", ");
-    throw new ExpressError(400, errMsg);
-  } else {
-    next();
-  }
-};
-
-app.get(
-  "/listings",
-  wrapAsync(async (req, res) => {
-    const allListings = await Listing.find({});
-    res.render("listings/index.ejs", { allListings });
-  })
-);
-
-// crete new listing
-app.get("/listings/new", (req, res) => {
-  res.render("listings/new.ejs");
+app.use((req, res, next) => {
+  res.locals.success = req.flash("success"); // this will create a success message for each user
+  res.locals.error = req.flash("error"); // this will create an error message for each user
+  next();
 });
 
-app.post(
-  "/listings",
-  validateListing,
-  wrapAsync(async (req, res) => {
-    // let {title, description, image, price, location, country} = req.body;
-    // here listing in req.body is an object which contains key-value pair
-    // if(!req.body.listing) {   // problem is this will check for all the fields collectively but if we miss one of them it will not handle it instead it will save that
-    //   throw new ExpressError(400, "Send valid data for listing");
-    // }
-    let newListing = new Listing(req.body.listing); // make a new object give these values to the models listing
-    // check for each fields by using tool joi(npm package) used for validation our schema
-    // let result = listingSchema.validate(req.body);
-    // if(result.error) {
-    //   throw new ExpressError(400, result.error);
-    //   console.log(result);
-    // }
-    await newListing.save();
-    console.log(newListing);
-    res.redirect("/listings");
-  })
-);
+app.use("/listings", listings); // this will use the listing.js file for all the routes which starts with /listings
+app.use("/listings/:id/review", reviews); // this will use the review.js file for all the routes which starts with /listings/:id/review
 
-// show route
-app.get(
-  "/listings/:id",
-  wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id).populate("review"); // populate will fetch the data from review collection and add it to the listing object  `;
 
-    res.render("listings/show.ejs", { listing });
-  })
-);
 
-// edit route
-app.get(
-  "/listings/:id/edit",
-  wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id);
-    res.render("listings/edit.ejs", { listing });
-  })
-);
-
-//update route
-app.put(
-  "/listings/:id",
-  validateListing,
-  wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true }); //...contains all the properties of listing
-    res.redirect(`/listings/${id}`);
-  })
-);
-
-// delete route
-
-app.delete(
-  "/listings/:id",
-  wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    await Listing.findByIdAndDelete(id);
-    res.redirect("/listings");
-  })
-);
-
-// reveiw route
-
-// adding a review
-
-app.post(
-  "/listings/:id/review",
-  validateReview,
-  wrapAsync(async (req, res) => {
-    let listing = await Listing.findById(req.params.id);
-    let newReview = new Review(req.body.review);
-
-    listing.review.push(newReview);
-    await newReview.save();
-    await listing.save();
-    console.log(newReview.comment);
-    res.redirect(`/listings/${listing._id}`);
-  })
-);
-
-// app.get("/testlisting", async (req, res) => {
-//   let sampleListing = new Listing({
-//     title: "My New Villa",
-//     description: "By the beach",
-//     price: 1200,
-//     location: "Calangute Goa",
-//     country: "India",
-//   });
-
-//   await sampleListing.save();
-//   console.log("sample has been saved");
-//   res.send("sample test listing");
-// });
 
 app.all("*", (req, res, next) => {
   // will execute when none of the above paths matched with it
