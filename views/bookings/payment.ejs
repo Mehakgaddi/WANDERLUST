@@ -1,0 +1,75 @@
+<%layout("/layouts/boilerplate.ejs")%>
+<body>
+  <div class="row mt-3">
+    <div class="col-8 offset-2">
+      <h2>Complete Your Payment</h2>
+      <hr>
+
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Booking Summary</h5>
+          <p class="card-text">
+            <b>Property:</b> <%=listing.title%><br>
+            <b>Location:</b> <%=listing.location%>, <%=listing.country%><br>
+            <b>Guest Name:</b> <%=booking.guestName%><br>
+            <b>Email:</b> <%=booking.guestEmail%><br>
+            <b>Check-In:</b> <%=booking.checkIn.toDateString()%><br>
+            <b>Check-Out:</b> <%=booking.checkOut.toDateString()%><br>
+            <b>Guests:</b> <%=booking.guests%><br>
+            <b>Duration:</b> <%=nights%> night(s)<br>
+            <hr>
+            <b>Total Amount:</b> <span class="text-success fs-5">&#8377;<%=booking.totalAmount.toLocaleString("en-IN")%></span>
+          </p>
+        </div>
+      </div>
+
+      <button id="pay-btn" class="btn btn-dark">Pay &#8377;<%=booking.totalAmount.toLocaleString("en-IN")%></button>
+      <a href="/listings/<%=listing._id%>/booking/new" class="btn btn-outline-secondary ms-2">Go Back</a>
+      <br><br>
+    </div>
+  </div>
+
+  <!-- hidden form to submit payment verification -->
+  <form id="payment-form" action="/listings/<%=listing._id%>/booking/verify-payment" method="POST" style="display:none;">
+    <input type="hidden" name="razorpay_order_id" id="razorpay_order_id" />
+    <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id" />
+    <input type="hidden" name="razorpay_signature" id="razorpay_signature" />
+    <input type="hidden" name="bookingId" value="<%=booking._id%>" />
+  </form>
+
+  <!-- razorpay checkout script -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    document.getElementById("pay-btn").addEventListener("click", function () {
+      var options = {
+        key: "<%=razorpayKeyId%>",
+        amount: "<%=razorpayOrder.amount%>",
+        currency: "INR",
+        name: "WanderLust",
+        description: "Hotel Booking - <%=listing.title%>",
+        order_id: "<%=razorpayOrder.id%>",
+        handler: function (response) {
+          document.getElementById("razorpay_order_id").value = response.razorpay_order_id;
+          document.getElementById("razorpay_payment_id").value = response.razorpay_payment_id;
+          document.getElementById("razorpay_signature").value = response.razorpay_signature;
+          document.getElementById("payment-form").submit();
+        },
+        prefill: {
+          name: "<%=booking.guestName%>",
+          email: "<%=booking.guestEmail%>",
+        },
+        theme: {
+          color: "#fe424d",
+        },
+      };
+
+      var rzp = new Razorpay(options);
+
+      rzp.on("payment.failed", function (response) {
+        alert("Payment failed: " + response.error.description);
+      });
+
+      rzp.open();
+    });
+  </script>
+</body>

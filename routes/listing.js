@@ -4,6 +4,7 @@ const wrapAsync = require("../utils/wrapAsync.js");
 const ExpressError = require("../utils/expressError.js");
 const { listingSchema } = require("../schema.js"); // import only listingSchema from the entire schema object
 const Listing = require("../models/listing.js");
+const { isLoggedIn, isAdmin } = require("../utils/authMiddleware.js");
 
 // middleware for schema validations
 const validateListing = (req, res, next) => {
@@ -16,8 +17,8 @@ const validateListing = (req, res, next) => {
   }
 };
 
-// create new listing
-router.get("/new", (req, res) => {
+// create new listing - admin only
+router.get("/new", isAdmin, (req, res) => {
   res.render("listings/new.ejs");
 });
 
@@ -32,6 +33,7 @@ router.get(
 // edit route
 router.get(
   "/:id/edit",
+  isAdmin,
   wrapAsync(async (req, res) => {
     let { id } = req.params;
     const listing = await Listing.findById(id);
@@ -46,6 +48,7 @@ router.get(
 //update route
 router.put(
   "/:id",
+  isAdmin,
   validateListing,
   wrapAsync(async (req, res) => {
     let { id } = req.params;
@@ -60,7 +63,10 @@ router.get(
   "/:id",
   wrapAsync(async (req, res) => {
     const { id } = req.params;
-    const listing = await Listing.findById(id).populate("review");
+    const listing = await Listing.findById(id).populate({
+      path: "review",
+      populate: { path: "author" }, // populate the author inside each review
+    });
     // populate will get the data from the review collection and add it to the listing collection
     // listing.review will give the id of the review collection and populate will get the data from the review collection and add it to the listing collection
     if (!listing) {
@@ -73,6 +79,7 @@ router.get(
 
 router.post(
   "/",
+  isAdmin,
   validateListing,
   wrapAsync(async (req, res) => {
     // if (!req.body.listing.image) {
@@ -101,6 +108,7 @@ router.post(
 
 router.delete(
   "/:id",
+  isAdmin,
   wrapAsync(async (req, res) => {
     let { id } = req.params;
     await Listing.findByIdAndDelete(id);

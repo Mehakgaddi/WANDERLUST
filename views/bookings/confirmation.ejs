@@ -1,0 +1,139 @@
+<%layout("/layouts/boilerplate.ejs")%>
+<body>
+  <div class="row mt-3">
+    <div class="col-8 offset-2 text-center">
+      <div class="mb-4">
+        <i class="fa-solid fa-circle-check text-success" style="font-size: 4rem;"></i>
+      </div>
+      <h2>Booking Confirmed!</h2>
+      <p class="text-muted">Your payment was successful and your booking is confirmed.</p>
+      <hr>
+    </div>
+
+    <div class="col-8 offset-2">
+
+      <!-- invoice card - this is what gets printed -->
+      <div class="card" id="invoice-section">
+        <div class="card-body p-4">
+
+          <!-- invoice header -->
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h4 class="text-danger mb-0"><i class="fa-regular fa-compass me-1"></i> WanderLust</h4>
+              <small class="text-muted">Your travel, your way</small>
+            </div>
+            <div class="text-end">
+              <h5 class="mb-0">INVOICE</h5>
+              <small class="text-muted">Date: <%=new Date().toDateString()%></small>
+            </div>
+          </div>
+
+          <hr>
+
+          <!-- booking info -->
+          <div class="row mb-3">
+            <div class="col-6">
+              <p class="mb-1"><b>Billed To</b></p>
+              <p class="mb-0"><%=booking.guestName%></p>
+              <p class="mb-0 text-muted"><%=booking.guestEmail%></p>
+            </div>
+            <div class="col-6 text-end">
+              <p class="mb-1"><b>Booking ID</b></p>
+              <p class="mb-0 text-muted" style="font-size:0.85rem;"><%=booking._id%></p>
+              <p class="mb-1 mt-2"><b>Payment ID</b></p>
+              <p class="mb-0 text-muted" style="font-size:0.85rem;"><%=booking.paymentId%></p>
+            </div>
+          </div>
+
+          <hr>
+
+          <!-- property details table -->
+          <table class="table table-bordered mb-3">
+            <thead class="table-dark">
+              <tr>
+                <th>Property</th>
+                <th>Location</th>
+                <th>Check-In</th>
+                <th>Check-Out</th>
+                <th>Guests</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><%=booking.listing.title%></td>
+                <td><%=booking.listing.location%>, <%=booking.listing.country%></td>
+                <td><%=booking.checkIn.toDateString()%></td>
+                <td><%=booking.checkOut.toDateString()%></td>
+                <td><%=booking.guests%></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- amount summary -->
+          <div class="row justify-content-end">
+            <div class="col-md-4">
+              <table class="table table-sm">
+                <tr>
+                  <td>Subtotal</td>
+                  <td class="text-end">&#8377;<%=booking.totalAmount.toLocaleString("en-IN")%></td>
+                </tr>
+                <tr>
+                  <td>Tax (0%)</td>
+                  <td class="text-end">&#8377;0</td>
+                </tr>
+                <tr class="table-dark">
+                  <td><b>Total Paid</b></td>
+                  <td class="text-end"><b>&#8377;<%=booking.totalAmount.toLocaleString("en-IN")%></b></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <hr>
+          <p class="text-center text-muted mb-0" style="font-size:0.85rem;">
+            Thank you for booking with WanderLust. Have a wonderful stay!
+          </p>
+
+        </div>
+      </div>
+
+      <!-- action buttons - hidden when printing -->
+      <div class="mt-4 mb-4 no-print">
+        <button onclick="printInvoice()" class="btn btn-danger">
+          <i class="fa-solid fa-print me-1"></i> Print Invoice
+        </button>
+        <a href="/listings/<%=booking.listing._id%>" class="btn btn-dark ms-2">Back to Listing</a>
+        <a href="/listings" class="btn btn-outline-secondary ms-2">All Listings</a>
+      </div>
+
+    </div>
+  </div>
+
+  <style>
+    @media print {
+      /* hide everything on the page */
+      body * {
+        visibility: hidden;
+      }
+      /* show only the invoice section */
+      #invoice-section, #invoice-section * {
+        visibility: visible;
+      }
+      #invoice-section {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        border: none !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+
+  <script>
+    function printInvoice() {
+      window.print();
+    }
+  </script>
+
+</body>

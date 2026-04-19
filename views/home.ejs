@@ -1,0 +1,56 @@
+<%layout("/layouts/boilerplate.ejs")%>
+<body>
+
+  <!-- hero section -->
+  <div class="hero text-center py-5">
+    <h1 class="hero-title">Find your next stay</h1>
+    <p class="hero-sub">Discover amazing places to stay around the world</p>
+    <a href="/listings" class="btn hero-btn mt-3">Explore Listings</a>
+  </div>
+
+  <!-- how it works -->
+  <div class="row text-center mt-5 mb-4">
+    <h3 class="mb-4">How it works</h3>
+
+    <div class="col-md-4 mb-3">
+      <i class="fa-solid fa-magnifying-glass step-icon mb-3"></i>
+      <h5>Search</h5>
+      <p class="text-muted">Browse hundreds of listings across cities and countries</p>
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <i class="fa-solid fa-calendar-check step-icon mb-3"></i>
+      <h5>Book</h5>
+      <p class="text-muted">Pick your dates and book instantly with secure payment</p>
+    </div>
+
+    <div class="col-md-4 mb-3">
+      <i class="fa-solid fa-house step-icon mb-3"></i>
+      <h5>Stay</h5>
+      <p class="text-muted">Check in and enjoy your stay at a great place</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- call to action -->
+  <div class="text-center my-5">
+    <% if(currUser && currUser.isAdmin) { %>
+      <h4>Welcome back, <%=currUser.username%>!</h4>
+      <p class="text-muted">Ready to manage the platform?</p>
+      <a href="/listings" class="btn hero-btn me-2">Browse Listings</a>
+      <a href="/admin/dashboard" class="btn btn-outline-dark">Admin Panel</a>
+    <% } else if(currUser) { %>
+      <h4>Welcome back, <%=currUser.username%>!</h4>
+      <p class="text-muted">Ready to explore something new?</p>
+      <a href="/listings" class="btn hero-btn me-2">Browse Listings</a>
+      <a href="/listing-requests/new" class="btn btn-outline-dark">List Your Property</a>
+    <% } else { %>
+      <h4>Ready to get started?</h4>
+      <p class="text-muted">Create an account to book stays and list your own property</p>
+      <a href="/signup" class="btn hero-btn me-2">Sign Up</a>
+      <a href="/login" class="btn btn-outline-dark">Log In</a>
+    <% } %>
+  </div>
+
+</body>

@@ -1,0 +1,50 @@
+<%layout("/layouts/boilerplate.ejs")%>
+<body>
+  <div class="row mt-3">
+    <div class="col-10 offset-1">
+      <h2>My Listing Requests</h2>
+      <p class="text-muted">Track the status of your submitted listings</p>
+      <hr>
+
+      <% if(requests.length === 0) { %>
+        <p class="text-muted">You have not submitted any listing requests yet.</p>
+        <a href="/listing-requests/new" class="btn add-btn mt-2">Submit a Listing</a>
+      <% } else { %>
+        <div class="table-responsive mt-3">
+          <table class="table table-bordered">
+            <thead class="table-dark">
+              <tr>
+                <th>Title</th>
+                <th>Location</th>
+                <th>Price/night</th>
+                <th>Submitted On</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% for(let r of requests) { %>
+                <tr>
+                  <td><%=r.title%></td>
+                  <td><%=r.location%>, <%=r.country%></td>
+                  <td>&#8377;<%=r.price.toLocaleString("en-IN")%></td>
+                  <td><%=r.createdAt.toDateString()%></td>
+                  <td>
+                    <% if(r.status === "pending") { %>
+                      <span class="badge bg-warning text-dark">Pending</span>
+                    <% } else if(r.status === "approved") { %>
+                      <span class="badge bg-success">Approved</span>
+                    <% } else { %>
+                      <span class="badge bg-danger">Rejected</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+        <a href="/listing-requests/new" class="btn add-btn mt-2">Submit Another</a>
+      <% } %>
+      <br><br>
+    </div>
+  </div>
+</body>

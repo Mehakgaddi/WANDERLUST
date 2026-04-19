@@ -1,0 +1,126 @@
+<%layout("/layouts/boilerplate.ejs")%>
+<body>
+  <div class="row mt-3">
+    <div class="col-8 offset-2">
+      <h2>Book Your Stay</h2>
+      <p class="text-muted"><%=listing.title%> &mdash; &#8377;<%=listing.price.toLocaleString("en-IN")%>/night</p>
+      <hr>
+      <br>
+      <form action="/listings/<%=listing._id%>/booking" method="POST" novalidate class="needs-validation">
+        <div class="mb-3">
+          <label for="guestName" class="form-label">Full Name</label>
+          <input
+            name="booking[guestName]"
+            type="text"
+            id="guestName"
+            placeholder="Enter your full name"
+            class="form-control"
+            required
+          />
+          <div class="invalid-feedback">Please enter your full name</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="guestEmail" class="form-label">Email Address</label>
+          <input
+            name="booking[guestEmail]"
+            type="email"
+            id="guestEmail"
+            placeholder="Enter your email"
+            class="form-control"
+            required
+          />
+          <div class="invalid-feedback">Please enter a valid email address</div>
+        </div>
+
+        <div class="row">
+          <div class="mb-3 col-md-6">
+            <label for="checkIn" class="form-label">Check-In Date</label>
+            <input
+              name="booking[checkIn]"
+              type="date"
+              id="checkIn"
+              class="form-control"
+              required
+            />
+            <div class="invalid-feedback">Please select a check-in date</div>
+          </div>
+
+          <div class="mb-3 col-md-6">
+            <label for="checkOut" class="form-label">Check-Out Date</label>
+            <input
+              name="booking[checkOut]"
+              type="date"
+              id="checkOut"
+              class="form-control"
+              required
+            />
+            <div class="invalid-feedback">Please select a check-out date</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="guests" class="form-label">Number of Guests</label>
+          <input
+            name="booking[guests]"
+            type="number"
+            id="guests"
+            placeholder="1"
+            min="1"
+            class="form-control"
+            required
+          />
+          <div class="invalid-feedback">Please enter number of guests (minimum 1)</div>
+        </div>
+
+        <div class="mb-3 p-3 bg-light rounded" id="price-summary" style="display:none;">
+          <h5>Price Summary</h5>
+          <p class="mb-1">&#8377;<%=listing.price.toLocaleString("en-IN")%>/night &times; <span id="nights-count">0</span> nights</p>
+          <hr>
+          <h5>Total: &#8377;<span id="total-amount">0</span></h5>
+        </div>
+
+        <br>
+        <button class="btn btn-dark add-btn" type="submit">Proceed to Payment</button>
+        <a href="/listings/<%=listing._id%>" class="btn btn-outline-secondary ms-2">Cancel</a>
+        <br><br>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // set minimum date to today
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("checkIn").setAttribute("min", today);
+    document.getElementById("checkOut").setAttribute("min", today);
+
+    const pricePerNight = <%=listing.price%>;
+
+    function updatePriceSummary() {
+      const checkIn = document.getElementById("checkIn").value;
+      const checkOut = document.getElementById("checkOut").value;
+
+      if (checkIn && checkOut) {
+        const checkInDate = new Date(checkIn);
+        const checkOutDate = new Date(checkOut);
+        const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+
+        if (nights > 0) {
+          document.getElementById("nights-count").textContent = nights;
+          document.getElementById("total-amount").textContent = (pricePerNight * nights).toLocaleString("en-IN");
+          document.getElementById("price-summary").style.display = "block";
+        } else {
+          document.getElementById("price-summary").style.display = "none";
+        }
+      }
+    }
+
+    document.getElementById("checkIn").addEventListener("change", function () {
+      // ensure check-out is after check-in
+      document.getElementById("checkOut").setAttribute("min", this.value);
+      updatePriceSummary();
+    });
+
+    document.getElementById("checkOut").addEventListener("change", updatePriceSummary);
+  </script>
+</body>

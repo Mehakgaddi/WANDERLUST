@@ -1,0 +1,63 @@
+<%layout("/layouts/boilerplate.ejs")%>
+<body>
+  <div class="row mt-3">
+    <div class="col-10 offset-1">
+      <h2>All Listing Requests</h2>
+      <a href="/admin/dashboard" class="text-muted">← Back to Dashboard</a>
+      <hr>
+
+      <% if(allRequests.length === 0) { %>
+        <p class="text-muted mt-3">No requests submitted yet.</p>
+      <% } else { %>
+        <div class="table-responsive mt-3">
+          <table class="table table-bordered">
+            <thead class="table-dark">
+              <tr>
+                <th>Title</th>
+                <th>Location</th>
+                <th>Price</th>
+                <th>Submitted By</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% for(let r of allRequests) { %>
+                <tr>
+                  <td><%=r.title%></td>
+                  <td><%=r.location%>, <%=r.country%></td>
+                  <td>&#8377;<%=r.price.toLocaleString("en-IN")%></td>
+                  <td><%=r.submittedBy.username%></td>
+                  <td><%=r.createdAt.toDateString()%></td>
+                  <td>
+                    <% if(r.status === "pending") { %>
+                      <span class="badge bg-warning text-dark">Pending</span>
+                    <% } else if(r.status === "approved") { %>
+                      <span class="badge bg-success">Approved</span>
+                    <% } else { %>
+                      <span class="badge bg-danger">Rejected</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if(r.status === "pending") { %>
+                      <form action="/admin/requests/<%=r._id%>/approve" method="POST" class="d-inline">
+                        <button class="btn btn-success btn-sm">Approve</button>
+                      </form>
+                      <form action="/admin/requests/<%=r._id%>/reject" method="POST" class="d-inline ms-1">
+                        <button class="btn btn-danger btn-sm">Reject</button>
+                      </form>
+                    <% } else { %>
+                      <span class="text-muted">—</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+      <br>
+    </div>
+  </div>
+</body>

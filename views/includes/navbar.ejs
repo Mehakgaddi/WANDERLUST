@@ -10,10 +10,36 @@
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-      <div class="navbar-nav">
+      <div class="navbar-nav me-auto">
         <a class="nav-link" href="/">Home</a>
-        <a class="nav-link" href="/listings">All listing</a>
-        <a class="nav-link" href="/listings/new">Add new listing</a>
+        <a class="nav-link" href="/listings">All Listings</a>
+
+        <% if(currUser && currUser.isAdmin) { %>
+          <!-- admin links -->
+          <a class="nav-link" href="/listings/new">Add Listing</a>
+          <a class="nav-link" href="/admin/dashboard">Admin Panel</a>
+        <% } else if(currUser) { %>
+          <!-- logged in user links -->
+          <a class="nav-link" href="/listing-requests/new">List Your Property</a>
+          <a class="nav-link" href="/listing-requests/my-requests">My Requests</a>
+        <% } %>
+      </div>
+
+      <div class="navbar-nav ms-auto">
+        <% if(currUser) { %>
+          <span class="nav-link text-muted">
+            <% if(currUser.isAdmin) { %>
+              <i class="fa-solid fa-shield-halved me-1 text-danger"></i>
+            <% } else { %>
+              <i class="fa-regular fa-user me-1"></i>
+            <% } %>
+            <%=currUser.username%>
+          </span>
+          <a class="nav-link" href="/logout">Log Out</a>
+        <% } else { %>
+          <a class="nav-link" href="/signup">Sign Up</a>
+          <a class="nav-link" href="/login">Log In</a>
+        <% } %>
       </div>
     </div>
   </div>

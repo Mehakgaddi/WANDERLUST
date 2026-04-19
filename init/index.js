@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
 const Listing = require("../models/listing.js"); // schema
 const initData = require("./data.js"); // data
+require("dotenv").config({ path: "../.env" });
 
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+const MONGO_URL = process.env.MONGO_URL;
 
 main()
   .then(() => {
