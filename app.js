@@ -10,6 +10,7 @@ const session = require("express-session");
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
+const MongoStore = require("connect-mongo");
 require("dotenv").config();
 
 const listings = require("./routes/listing.js");
@@ -45,6 +46,11 @@ const sessionOptions = {
   secret : process.env.SESSION_SECRET || "thisismysecretkey",
   resave : false,
   saveUninitialized : false,
+  // store sessions in MongoDB so they survive server restarts
+  store : MongoStore.create({
+    mongoUrl : process.env.MONGO_URL,
+    touchAfter : 24 * 60 * 60, // only update session once per 24 hours unless data changes
+  }),
   cookie : {
     maxAge : 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
     httpOnly : true,
