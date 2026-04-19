@@ -42,16 +42,30 @@ router.post(
     let { username, email, password } = req.body.user;
 
     // check if email already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
       req.flash("error", "An account with this email already exists!");
+      return res.redirect("/signup");
+    }
+
+    // check if username already exists
+    const existingUsername = await User.findOne({ username });
+    if (existingUsername) {
+      req.flash("error", "This username is already taken. Please choose another!");
       return res.redirect("/signup");
     }
 
     const newUser = new User({ username, email });
 
     // register method from passport-local-mongoose handles password hashing
-    const registeredUser = await User.register(newUser, password);
+    // wrap in try-catch to handle any duplicate key errors gracefully
+    let registeredUser;
+    try {
+      registeredUser = await User.register(newUser, password);
+    } catch (err) {
+      req.flash("error", err.message || "Something went wrong during signup. Please try again.");
+      return res.redirect("/signup");
+    }
 
     // log the user in right after signup
     req.login(registeredUser, (err) => {

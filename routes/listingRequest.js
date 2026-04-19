@@ -5,6 +5,7 @@ const wrapAsync = require("../utils/wrapAsync.js");
 const ExpressError = require("../utils/expressError.js");
 const ListingRequest = require("../models/listingRequest.js");
 const { isLoggedIn } = require("../utils/authMiddleware.js");
+const { sendListingRequestEmail } = require("../utils/mailer.js");
 
 // show form to submit a listing request
 router.get("/new", isLoggedIn, (req, res) => {
@@ -30,6 +31,15 @@ router.post(
     });
 
     await newRequest.save();
+
+    // send email notification to admin
+    try {
+      await sendListingRequestEmail(newRequest, req.user.username);
+    } catch (emailErr) {
+      // do not block the user if email fails, just log it
+      console.log("Email notification failed:", emailErr.message);
+    }
+
     req.flash("success", "Your listing request has been submitted! Admin will review it shortly.");
     res.redirect("/listings");
   })
